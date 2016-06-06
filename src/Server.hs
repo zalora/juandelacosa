@@ -7,15 +7,15 @@ import Control.Exception.Base (throwIO, catch, bracket)
 import Data.Bits ((.|.))
 import Data.Pool (createPool, destroyAllResources)
 import Database.MySQL.Base (ConnectInfo)
-import Network.Socket (socket, bind, listen, close, maxListenQueue,
-                       getSocketName, inet_addr,
-                       Family(AF_UNIX, AF_INET), SocketType(Stream),
-                       Socket, SockAddr(SockAddrUnix, SockAddrInet))
+import Network.Socket (socket, setSocketOption, bind, listen, close,
+  maxListenQueue, getSocketName, inet_addr, Family(AF_UNIX, AF_INET),
+  SocketType(Stream), SocketOption(ReuseAddr), Socket, SockAddr(SockAddrUnix,
+  SockAddrInet))
 import Network.Wai.Handler.Warp (Port, defaultSettings, runSettingsSocket)
 import System.IO (hPutStrLn, stderr)
 import System.IO.Error (isDoesNotExistError)
-import System.Posix.Files (removeLink, setFileMode, socketMode,
-                           ownerReadMode, ownerWriteMode, groupReadMode, groupWriteMode)
+import System.Posix.Files (removeLink, setFileMode, socketMode, ownerReadMode,
+  ownerWriteMode, groupReadMode, groupWriteMode)
 import qualified Database.MySQL.Simple as MySQL
 
 import Application (app)
@@ -55,6 +55,7 @@ createSocket (Right path) = do
   return sock
 createSocket (Left port) = do
   sock <- socket AF_INET Stream 0
+  setSocketOption sock ReuseAddr 1
   addr <- inet_addr "127.0.0.1"
   bind sock $ SockAddrInet (fromIntegral port) addr
   hPutStrLn stderr $ "Listening on localhost:" ++ show port
