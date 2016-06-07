@@ -23,8 +23,8 @@ import Application (app)
 type Listen = Either Port FilePath
 
 
-server :: Listen -> ConnectInfo -> IO ()
-server socketSpec mysqlConnInfo =
+server :: Listen -> ConnectInfo -> FilePath -> IO ()
+server socketSpec mysqlConnInfo dataDir =
   bracket
     ( do
       sock <- createSocket socketSpec
@@ -40,7 +40,8 @@ server socketSpec mysqlConnInfo =
       destroyAllResources mysql )
     ( \(sock, mysql) -> do
       listen sock maxListenQueue
-      runSettingsSocket defaultSettings sock (app mysql) )
+      hPutStrLn stderr $ "Static files from `" ++ dataDir ++ "'"
+      runSettingsSocket defaultSettings sock =<< app mysql dataDir)
 
 
 createSocket :: Listen -> IO Socket

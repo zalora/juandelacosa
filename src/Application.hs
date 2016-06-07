@@ -1,52 +1,73 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
-module Application
-(
+module Application (
   app
 ) where
 
+import Control.Monad.Trans (liftIO)
 import Data.ByteString.Base64 (encode)
+import Data.Default.Class (def)
 import Data.Pool (Pool, withResource)
-import Database.MySQL.Simple (Connection, execute)
-import Network.HTTP.Types (status200, badRequest400, Header)
-import Network.HTTP.Types.Header (hContentType)
-import Network.Wai (Application, requestHeaders, responseLBS, Response)
+import Data.Text.Lazy.Encoding (encodeUtf8, decodeUtf8)
+import Database.MySQL.Simple (Connection, Only(..), query, execute)
+import Network.HTTP.Types (notFound404,  badRequest400)
+import Network.Wai (Application, Middleware)
+import Network.Wai.Middleware.RequestLogger (Destination(Handle),
+  mkRequestLogger, RequestLoggerSettings(destination, outputFormat),
+  OutputFormat(Apache), IPAddrSource(FromHeader))
+import Network.Wai.Middleware.Static (addBase, hasPrefix, staticPolicy, (>->))
 import System.Entropy (getEntropy)
 import System.IO (stderr)
+import Web.Scotty (ScottyM, ActionM, header, middleware, file, get, post,
+  status, text, scottyApp)
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as LBS
-import qualified Data.CaseInsensitive as CI
 
+app :: Pool Connection -> FilePath -> IO Application
+app p f = do
+  logger <- mkRequestLogger def{ destination = Handle stderr, outputFormat = Apache FromHeader }
+  scottyApp (juanDeLaCosa p logger f)
 
-app :: Pool Connection -> Application
-app p request respond = do
+juanDeLaCosa :: Pool Connection -> Middleware -> FilePath -> ScottyM ()
+juanDeLaCosa p logger dataDir = do
   let
-    headers = requestHeaders request
-    from = readHeader "From" headers
-  case from of
-    Just login -> apiResetPassword p login >>= respond
-    Nothing -> respond $ responseLBS
-              badRequest400
-              [(hContentType, "text/plain")]
-              "Missing the From header"
+    index_html = dataDir ++ "/" ++ "index.html"
+
+  middleware logger
+
+  middleware $ staticPolicy (hasPrefix "static" >-> addBase dataDir)
+  get "/" $ file index_html
+  get "/index.html" $ file index_html
+
+  post "/resetMyPassword" $ apiResetMyPassword p
+  get "/whoAmI" $ apiWhoAmI p
 
 
-apiResetPassword :: Pool Connection -> BS.ByteString -> IO Response
-apiResetPassword p login = withResource p $
-  \c -> do
-     blab ["SET PASSWORD FOR '", login, "'@'%'"]
-     password <- BS.takeWhile (/= '=') . encode <$> getEntropy 12
-     _ <- execute c "SET PASSWORD FOR ?@'%' = PASSWORD(?)"  [ login, password ]
-     return $ responseLBS
-              status200
-              [(hContentType, "text/plain")]
-              (LBS.fromStrict password)
+apiWhoAmI :: Pool Connection -> ActionM ()
+apiWhoAmI p =
+  header "From" >>= \case
+    Nothing -> status badRequest400 >> text "Missing header `From'"
+    Just login -> do
+      [ Only n ] <- withDB p $ \c ->
+              query c "SELECT COUNT(*) FROM mysql.user WHERE User=? AND Host='%'"
+                        [ LBS.toStrict . encodeUtf8 $ login ]
+      if (n::Int) > 0
+        then text login
+        else status notFound404 >> text login
+
+apiResetMyPassword :: Pool Connection -> ActionM ()
+apiResetMyPassword p =
+  header "From" >>= \case
+    Nothing -> status badRequest400 >> text "Missing header `From'"
+    Just login -> do
+      password <- liftIO $ BS.takeWhile (/= '=') . encode <$> getEntropy 13
+      _ <- withDB p $ \c -> execute c "SET PASSWORD FOR ?@'%' = PASSWORD(?)"
+                             [ LBS.toStrict . encodeUtf8 $ login, password ]
+      text . decodeUtf8 . LBS.fromStrict $ password
 
 
-readHeader :: BS.ByteString -> [Header] -> Maybe BS.ByteString
-readHeader h = lookup (CI.mk h)
-
-
-blab :: [BS.ByteString] -> IO ()
-blab = BS.hPutStrLn stderr . BS.concat
+withDB :: Pool Connection -> (Connection -> IO a) -> ActionM a
+withDB p a = liftIO $ withResource p (liftIO . a)
 

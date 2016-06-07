@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="static/external/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="static/external/bootstrap/css/bootstrap-theme.min.css" rel="stylesheet">
+    <title>Juan De La Cosa</title>
+  </head>
+
+  <body>
+    <div id="noSuchAccount" class="collapse container">
+      <h1>Your account does not exist</h1>
+      <div class="alert alert-info">
+        Your login would be <strong id="account"></strong>, but it does not exist in the database.
+      </div>
+    </div>
+
+    <div id="main" class="collapse container">
+
+      <h1>Your Account</h1>
+      <p class="lead">The button below generates a new password every time you click it.
+        <br> The new password shows for a short time, then you copy it.</p>
+
+
+      <form class="form-horizontal">
+        <div id="loginGroup" class="form-group">
+          <label class="control-label col-sm-2" for="login">Login:</label>
+          <div class="col-sm-6">
+            <input id="login" readonly type="text" class="form-control" maxlength="80">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="control-label col-sm-2" for="resetPassword">Password:</label>
+          <div class="col-sm-6">
+            <input id="password" readonly type="text" class="collapse form-control">
+            <button id="resetPassword" type="button" class="btn btn-danger">Reset password</button>
+          </div>
+        </div>
+        <div id="passwordChanged" class="collapse alert alert-success">Password changed</div>
+        <div id="passwordFailed" class="collapse alert alert-danger"></div>
+      </form>
+
+
+    </div>
+    <script src="static/external/jquery-2.2.4.min.js"></script>
+    <script src="static/external/bootstrap/js/bootstrap.min.js"></script>
+    <script src="static/juandelacosa.js"></script>
+
+  </body>
+
+</html>
