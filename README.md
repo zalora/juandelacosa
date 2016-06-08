@@ -39,3 +39,10 @@ Type `juandelacosa --help` to see usage summary:
 
       -h, --help               Show this message
 
+
+Screenshots
+===========
+![Reset Password](./screenshots/resetpassword.png)
+![Password Chnaged](./screenshots/passwordchanged.png)
+![No Account](./screenshots/noaccout.png)
+
