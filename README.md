@@ -40,6 +40,16 @@ Type `juandelacosa --help` to see usage summary:
       -h, --help               Show this message
 
 
+Database Privileges
+===================
+
+```sql
+CREATE USER IF NOT EXISTS 'juandelacosa'@'localhost' IDENTIFIED VIA unix_socket;
+REVOKE ALL, GRANT OPTION FROM 'juandelacosa'@'localhost';
+GRANT UPDATE ON `mysql`.* TO 'juandelacosa'@'localhost';
+GRANT SELECT ON `mysql`.`user` TO 'juandelacosa'@'localhost';
+```
+
 Screenshots
 ===========
 ![Reset Password](./screenshots/resetpassword.png)
