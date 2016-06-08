@@ -32,18 +32,10 @@ Type `juandelacosa --help` to see usage summary:
       -f, --file=MYCNF         Read this MySQL client config file
       -g, --group=GROUP        Read this options group in the above file [default: client]
 
+      -d, --datadir=DIR        Data directory including static files [default: <cabal data dir>]
+
       -s, --socket=SOCK        Listen on this UNIX-socket [default: /tmp/juandelacosa.sock]
       -p, --port=PORT          Instead of UNIX-socket, listen on this TCP port (localhost)
 
       -h, --help               Show this message
-
-Example:
-
-    $ juandelacosa -p 8080
-    $ curl http://localhost:8080 -H 'From: jack.frost@example.com'
-      Tiw7CdJOmYxJBZ7J
-
-The above request will change the password for 'jack.frost@example.com'@'%'
-and return the new password to user. Once it's behind Sproxy
-any user can get a new password in a secure way.
 
