@@ -1,5 +1,5 @@
 name: juandelacosa
-version: 0.1.0
+version: 0.1.1
 synopsis: Manage users in MariaDB >= 10.1.1
 description:
   HTTP server for managing MariaDB users.  Designed to work behind
