@@ -32,6 +32,7 @@ executable juandelacosa
     main-is: Main.hs
     other-modules:
       Application
+      LogFormat
       Server
     build-depends:
         base                     >= 4.8 && < 50
@@ -40,6 +41,7 @@ executable juandelacosa
       , data-default-class
       , docopt                   >= 0.7
       , entropy                  >= 0.3
+      , fast-logger
       , http-types               >= 0.9
       , interpolatedstring-perl6 >= 1.0
       , mtl                      >= 2.2

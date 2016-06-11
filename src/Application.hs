@@ -12,11 +12,11 @@ import Data.Default.Class (def)
 import Data.Pool (Pool, withResource)
 import Data.Text.Lazy.Encoding (encodeUtf8, decodeUtf8)
 import Database.MySQL.Simple (Connection, Only(..), query, execute)
-import Network.HTTP.Types (notFound404,  badRequest400)
+import Network.HTTP.Types (notFound404, badRequest400)
 import Network.Wai (Application, Middleware)
 import Network.Wai.Middleware.RequestLogger (Destination(Handle),
   mkRequestLogger, RequestLoggerSettings(destination, outputFormat),
-  OutputFormat(Apache), IPAddrSource(FromHeader))
+  OutputFormat(CustomOutputFormat))
 import Network.Wai.Middleware.Static (addBase, hasPrefix, staticPolicy, (>->))
 import System.Entropy (getEntropy)
 import System.IO (stderr)
@@ -25,9 +25,13 @@ import Web.Scotty (ScottyM, ActionM, header, middleware, file, get, post,
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as LBS
 
+import LogFormat (logFormat)
+
+
 app :: Pool Connection -> FilePath -> IO Application
 app p f = do
-  logger <- mkRequestLogger def{ destination = Handle stderr, outputFormat = Apache FromHeader }
+  logger <- mkRequestLogger def{ destination = Handle stderr
+                               , outputFormat = CustomOutputFormat logFormat }
   scottyApp (juanDeLaCosa p logger f)
 
 juanDeLaCosa :: Pool Connection -> Middleware -> FilePath -> ScottyM ()
