@@ -8,7 +8,7 @@ $(function() {
   var passwordMessage = $('#passwordMessage');
   var resetPassword = $('#resetPassword');
 
-  document.title = window.location.hostname + ' - ' + 'Juan De La Cosa';
+  document.title = window.location.hostname + ' — ' + 'Juan De La Cosa';
 
   (function whoAmI() {
     $.ajax({
