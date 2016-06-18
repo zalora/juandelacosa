@@ -36,14 +36,10 @@ app p f = do
 
 juanDeLaCosa :: Pool Connection -> Middleware -> FilePath -> ScottyM ()
 juanDeLaCosa p logger dataDir = do
-  let
-    index_html = dataDir ++ "/" ++ "index.html"
-
   middleware logger
 
   middleware $ staticPolicy (hasPrefix "static" >-> addBase dataDir)
-  get "/" $ file index_html
-  get "/index.html" $ file index_html
+  get "/" $ file (dataDir ++ "/" ++ "index.html")
 
   post "/resetMyPassword" $ apiResetMyPassword p
   get "/whoAmI" $ apiWhoAmI p
