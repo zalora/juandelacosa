@@ -10,6 +10,7 @@ import Control.Monad.Trans (liftIO)
 import Data.ByteString.Base64 (encode)
 import Data.Default.Class (def)
 import Data.Pool (Pool, withResource)
+import Data.Text.Lazy (Text, toLower)
 import Data.Text.Lazy.Encoding (encodeUtf8, decodeUtf8)
 import Database.MySQL.Simple (Connection, Only(..), query, execute)
 import Network.HTTP.Types (notFound404, badRequest400)
@@ -49,7 +50,8 @@ apiWhoAmI :: Pool Connection -> ActionM ()
 apiWhoAmI p =
   header "From" >>= \case
     Nothing -> status badRequest400 >> text "Missing header `From'"
-    Just login -> do
+    Just email -> do
+      let login = emailToLogin email
       [ Only n ] <- withDB p $ \c ->
               query c "SELECT COUNT(*) FROM mysql.user WHERE User=? AND Host='%'"
                         [ LBS.toStrict . encodeUtf8 $ login ]
@@ -61,7 +63,8 @@ apiResetMyPassword :: Pool Connection -> ActionM ()
 apiResetMyPassword p =
   header "From" >>= \case
     Nothing -> status badRequest400 >> text "Missing header `From'"
-    Just login -> do
+    Just email -> do
+      let login = emailToLogin email
       password <- liftIO $ BS.takeWhile (/= '=') . encode <$> getEntropy 13
       _ <- withDB p $ \c -> execute c "SET PASSWORD FOR ?@'%' = PASSWORD(?)"
                              [ LBS.toStrict . encodeUtf8 $ login, password ]
@@ -70,4 +73,7 @@ apiResetMyPassword p =
 
 withDB :: Pool Connection -> (Connection -> IO a) -> ActionM a
 withDB p a = liftIO $ withResource p (liftIO . a)
+
+emailToLogin :: Text -> Text
+emailToLogin = toLower
 
