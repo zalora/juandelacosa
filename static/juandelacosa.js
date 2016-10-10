@@ -29,7 +29,7 @@ $(function() {
           infoAlert.removeClass().addClass('alert alert-info');
           setTimeout(whoAmI, 60 * 1000);
         } else {
-          infoHead.text('An error has occured');
+          infoHead.text('An error has occurred');
           infoAlert.text((0 == jqXHR.readyState) ?
             'Service unavailable' : errorThrown);
           infoAlert.removeClass().addClass('alert alert-danger');
