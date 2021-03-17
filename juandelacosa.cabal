@@ -47,7 +47,7 @@ executable juandelacosa
       , mtl                      >= 2.2
       , mysql                    >= 0.1
       , mysql-simple             >= 0.2
-      , network                  >= 2.6
+      , network                  >= 2.6 && < 2.9
       , resource-pool            >= 0.2
       , scotty                   >= 0.10
       , text                     >= 1.2
