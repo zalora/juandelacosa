@@ -66,7 +66,7 @@ apiResetMyPassword p =
     Just email -> do
       let login = emailToLogin email
       password <- liftIO $ BS.takeWhile (/= '=') . encode <$> getEntropy 13
-      _ <- withDB p $ \c -> execute c "SET PASSWORD FOR ?@'%' = PASSWORD(?)"
+      _ <- withDB p $ \c -> execute c "ALTER USER ?@'%' IDENTIFIED BY ?"
                              [ LBS.toStrict . encodeUtf8 $ login, password ]
       text . decodeUtf8 . LBS.fromStrict $ password
 
